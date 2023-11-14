@@ -1,6 +1,6 @@
 # Hotel Rates Scraper
 
-This Python script allows you to scrape hotel rates and related information from a web page using Selenium and BeautifulSoup. It is particularly designed to extract details such as room names, rate names, guest information, cancellation details, currency amount, currency symbol, and a boolean value indicating whether it's a "Top Deal."
+This Python script allows you to scrape hotel rates from the input file and related information from a web page using Selenium and BeautifulSoup. It is particularly designed to extract details such as room names, rate names, guest information, cancellation details, currency amount, currency symbol, and a boolean value indicating whether it's a "Top Deal."
 
 ## How to Use
 

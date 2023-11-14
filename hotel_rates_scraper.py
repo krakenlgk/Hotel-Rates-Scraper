@@ -2,106 +2,121 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import re
+import csv
+from datetime import datetime
 
-# Set up a headless browser
-options = Options()
-options.headless = True
-driver = webdriver.Chrome(options=options)
+# Function to format date from DD-MM-YYYY to YYYY-MM-DD
+def format_date(date_str):
+    date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+    return date_obj.strftime('%Y-%m-%d')
 
-# Load the page
-url = 'url'
-driver.get(url)
+# Read data from CSV file
+csv_file_path = 'your_file_path.csv'  # Replace with the path to your CSV file
+with open(csv_file_path, newline='') as csvfile:
+    csv_reader = csv.DictReader(csvfile)
 
-# Wait for a short time to ensure JavaScript content is loaded (you may need to adjust this)
-driver.implicitly_wait(5)
+    for row in csv_reader:
+        # Construct the URL with dynamic parameters
+        url = f'https://www.hotels.com/hotels/properties/{row["hotel_id"]}?adults=2&checkIn={format_date(row["check-in"])}&checkOut={format_date(row["check-out"])}&children=0&infants=0&location=London%2C+England%2C+United+Kingdom&page=1&payWith=cash&searchType=list&sortBy=popularity'
 
-# Get the page source
-html = driver.page_source
+        # Set up a headless browser
+        options = Options()
+        options.headless = True
+        driver = webdriver.Chrome(options=options)
 
-# Close the browser
-driver.quit()
+        # Load the page
+        driver.get(url)
 
-# Parse the HTML content with BeautifulSoup
-soup = BeautifulSoup(html, 'html.parser')
+        # Wait for a short time to ensure JavaScript content is loaded (you may need to adjust this)
+        driver.implicitly_wait(5)
 
-# Your provided JavaScript path for the parent div
-js_path_parent = '#__next > div > div > div.css-ommd71-Box.e1m6xhuh0 > div.css-n5x25a-Box.e1m6xhuh0 > div.css-34t0qr-Box.e1m6xhuh0 > div.css-bk9xu4-Box.ee2o81s0 > div > div:nth-child(3) > div'
+        # Get the page source
+        html = driver.page_source
 
-# Use BeautifulSoup to find the desired element for the parent div
-parent_div = soup.select_one(js_path_parent)
+        # Close the browser
+        driver.quit()
 
-# Your provided JavaScript path for the child divs
-js_path_child = '#__next > div > div > div.css-ommd71-Box.e1m6xhuh0 > div.css-n5x25a-Box.e1m6xhuh0 > div.css-34t0qr-Box.e1m6xhuh0 > div.css-bk9xu4-Box.ee2o81s0 > div > div:nth-child(3) > div > div'
+        # Parse the HTML content with BeautifulSoup
+        soup = BeautifulSoup(html, 'html.parser')
 
-# Use BeautifulSoup to find all the child divs
-child_divs = parent_div.select(js_path_child)
+        # Your provided JavaScript path for the parent div
+        js_path_parent = '#__next > div > div > div.css-ommd71-Box.e1m6xhuh0 > div.css-n5x25a-Box.e1m6xhuh0 > div.css-34t0qr-Box.e1m6xhuh0 > div.css-bk9xu4-Box.ee2o81s0 > div > div:nth-child(3) > div'
 
-# Your provided JavaScript path for the 3rd div (constant)
-js_path_3rd_div = 'div.css-gclp3x-Box.e1yh5p92'
+        # Use BeautifulSoup to find the desired element for the parent div
+        parent_div = soup.select_one(js_path_parent)
 
-# Construct a dynamic selector for all h3 elements within the 3rd div
-h3_selector = f'{js_path_3rd_div} h3'
+        # Your provided JavaScript path for the child divs
+        js_path_child = '#__next > div > div > div.css-ommd71-Box.e1m6xhuh0 > div.css-n5x25a-Box.e1m6xhuh0 > div.css-34t0qr-Box.e1m6xhuh0 > div.css-bk9xu4-Box.ee2o81s0 > div > div:nth-child(3) > div > div'
 
-# Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="offer-guest-text"
-span_selector = f'{js_path_3rd_div} [data-testid="offer-guest-text"]'
+        # Use BeautifulSoup to find all the child divs
+        child_divs = parent_div.select(js_path_child)
 
-# Construct a dynamic selector for the button within the 3rd div with the attribute data-testid="cancellation-policy-message"
-button_selector = f'{js_path_3rd_div} [data-testid="cancellation-policy-message"]'
+        # Your provided JavaScript path for the 3rd div (constant)
+        js_path_3rd_div = 'div.css-gclp3x-Box.e1yh5p92'
 
-# Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="amount"
-amount_selector = f'{js_path_3rd_div} [data-testid="amount"]'
+        # Construct a dynamic selector for all h3 elements within the 3rd div
+        h3_selector = f'{js_path_3rd_div} h3'
 
-# Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="currency-symbol" and class "css-14s162u-Text.e1j4w3aq0"
-currency_symbol_selector = f'{js_path_3rd_div} [data-testid="currency-symbol"].css-14s162u-Text.e1j4w3aq0 sup'
+        # Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="offer-guest-text"
+        span_selector = f'{js_path_3rd_div} [data-testid="offer-guest-text"]'
 
-# Construct a dynamic selector for the span within the 3rd div with the class "css-1wta3u5-Box"
-boolean_value_selector = f'{js_path_3rd_div} span.css-1jr3e3z-Text-BadgeText.e34cw120'
+        # Construct a dynamic selector for the button within the 3rd div with the attribute data-testid="cancellation-policy-message"
+        button_selector = f'{js_path_3rd_div} [data-testid="cancellation-policy-message"]'
 
-# List to store rate information
-rates = []
+        # Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="amount"
+        amount_selector = f'{js_path_3rd_div} [data-testid="amount"]'
 
-# Iterate through each child div
-for child_div in child_divs:
-    # Extract room name
-    room_name_selector = 'div.css-1grjpsc-Box-Flex.e1pfwvfi0 > div.css-1npdra2-Box-Flex.e1pfwvfi0 > div > div.css-v9e3m6-Hide.e1iw1znz0 > h3'
-    room_name = child_div.select_one(room_name_selector).text.strip()
+        # Construct a dynamic selector for the span within the 3rd div with the attribute data-testid="currency-symbol" and class "css-14s162u-Text.e1j4w3aq0"
+        currency_symbol_selector = f'{js_path_3rd_div} [data-testid="currency-symbol"].css-14s162u-Text.e1j4w3aq0 sup'
 
-    # Extract rate names from the 3rd div
-    rate_names = [rate_name.text.strip() for rate_name in child_div.select(h3_selector)]
+        # Construct a dynamic selector for the span within the 3rd div with the class "css-1wta3u5-Box"
+        boolean_value_selector = f'{js_path_3rd_div} span.css-1jr3e3z-Text-BadgeText.e34cw120'
 
-    # Extract guest details from the 3rd div
-    guest_details = child_div.select_one(span_selector).text.strip()
+        # List to store rate information
+        rates = []
 
-    # Extract the number of guests using regular expression
-    guests_match = re.search(r'(\d+) guests', guest_details)
-    num_guests = int(guests_match.group(1)) if guests_match else None
+        # Iterate through each child div
+        for child_div in child_divs:
+            # Extract room name
+            room_name_selector = 'div.css-1grjpsc-Box-Flex.e1pfwvfi0 > div.css-1npdra2-Box-Flex.e1pfwvfi0 > div > div.css-v9e3m6-Hide.e1iw1znz0 > h3'
+            room_name = child_div.select_one(room_name_selector).text.strip()
 
-    # Extract cancellation details from the 3rd div
-    cancellation_details = child_div.select_one(button_selector).text.strip()
+            # Extract rate names from the 3rd div
+            rate_names = [rate_name.text.strip() for rate_name in child_div.select(h3_selector)]
 
-    # Extract currency amount from the 3rd div
-    currency_amount = child_div.select_one(amount_selector).text.strip()
+            # Extract guest details from the 3rd div
+            guest_details = child_div.select_one(span_selector).text.strip()
 
-    # Extract currency symbol from the 3rd div
-    currency_symbol = child_div.select_one(currency_symbol_selector).text.strip()
+            # Extract the number of guests using regular expression
+            guests_match = re.search(r'(\d+) guests', guest_details)
+            num_guests = int(guests_match.group(1)) if guests_match else None
 
-    # Extract boolean value from the 3rd div
-    boolean_value = child_div.select_one(boolean_value_selector).text.strip() == 'Top Deal'
+            # Extract cancellation details from the 3rd div
+            cancellation_details = child_div.select_one(button_selector).text.strip()
 
-    # Create a JSON object for each rate and guest
-    for rate_name in rate_names:
-        rate_info = {
-            'Room_name': room_name,
-            'Rate_name': rate_name,
-            'Number_of_Guests': num_guests,
-            'Cancellation_policy': cancellation_details,
-            'Price': currency_amount,
-            'Currency': currency_symbol,
-            'Boolean_value': boolean_value
-        }
+            # Extract currency amount from the 3rd div
+            currency_amount = child_div.select_one(amount_selector).text.strip()
 
-        # Append the rate information to the list
-        rates.append(rate_info)
+            # Extract currency symbol from the 3rd div
+            currency_symbol = child_div.select_one(currency_symbol_selector).text.strip()
+
+            # Extract boolean value from the 3rd div
+            boolean_value = child_div.select_one(boolean_value_selector).text.strip() == 'Top Deal'
+
+            # Create a JSON object for each rate and guest
+            for rate_name in rate_names:
+                rate_info = {
+                    'Room_name': room_name,
+                    'Rate_name': rate_name,
+                    'Number_of_Guests': num_guests,
+                    'Cancellation_policy': cancellation_details,
+                    'Price': currency_amount,
+                    'Currency': currency_symbol,
+                    'Boolean_value': boolean_value
+                }
+
+            # Append the rate information to the list
+            rates.append(rate_info)
 
 # Print or use the rates list as needed
-print('Rates Information:', rates)
+print(f'Rates Information for Hotel ID {row["hotel_id"]}:', rates)
